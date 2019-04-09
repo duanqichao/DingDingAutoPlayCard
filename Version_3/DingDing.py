@@ -12,6 +12,8 @@ import configparser
 import cv2
 from queue import Queue
 import threading
+import json
+import urllib.request
 
 config = configparser.ConfigParser(allow_no_value=False)
 config.read("dingding.cfg")
@@ -234,15 +236,33 @@ def start_loop(hourtype,minute):
         return
 
 # 是否是周末
+# def is_weekend():
+#     """
+#     :return: if weekend return False else return True
+#     """
+#     now_time = datetime.datetime.now().strftime("%w")
+#     if now_time == "6" or now_time == "0":
+#         return False
+#     else:
+#         return True
+
+# 是否上班
 def is_weekend():
-    """
-    :return: if weekend return False else return True
-    """
-    now_time = datetime.datetime.now().strftime("%w")
-    if now_time == "6" or now_time == "0":
-        return False
-    else:
+    nowTime=time.strftime('%Y%m%d',time.localtime())
+    date = nowTime
+    #节假日接口
+    server_url = "http://api.goseek.cn/Tools/holiday?date="
+  
+    vop_url_request = urllib.request.Request(server_url+date)
+    vop_response = urllib.request.urlopen(vop_url_request)
+  
+    vop_data= json.loads(vop_response.read())
+
+    if vop_data['data'] == 0 or vop_data['data'] == 2:
         return True
+    elif vop_data['data'] == 1 or vop_data['data'] == 3 :
+        return False
+
 
 def start_video(q):
     cap = cv2.VideoCapture(0)  # 创建一个 VideoCapture 对象
